@@ -2,6 +2,26 @@
 let focusedWindowId = undefined;
 let lastLog = Date.now() - 1000; //make sure the initial log is captured
 
+async function sendDataToServer(data) {
+  try {
+    const response = await fetch('http://127.0.0.1:8000/log', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const responseData = await response.json();
+    console.log('Data successfully sent to the server:', responseData);
+  } catch (error) {
+    console.error('Error sending data to the server:', error);
+  }
+}
+
+
 async function bootstrap() {
   const focusedWindow = await chrome.windows.getLastFocused();
   focusedWindowId = focusedWindow.id;
@@ -33,7 +53,8 @@ async function loadWindowList() {
   };
 
   timestamp = Date.now();
-  if (timestamp - lastLog > 100) {
+  if (timestamp - lastLog > 200) {
+    sendDataToServer(state)
     console.log("Current State:", state);
   }
   lastLog = Date.now()
